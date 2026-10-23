@@ -59,4 +59,12 @@
 
 ## 在线部署
 
-GitHub Pages 的线上验证结果将在部署完成后补充。
+已于 2026-10-23 验证 [GitHub Pages 在线版](https://kevinmasai.github.io/protein-designer/)：HTTPS 返回 200，页面渲染正常；实际完成第一关、解锁第二关，刷新保存进度，两条建议正常显示。线上控制台错误和外部资源请求均为 0。
+
+按 LF 规范化换行后，线上 HTML 与本地交付文件内容完全一致，SHA-256 为：
+
+```text
+aefdeadba3d72ea34bff60eea29f4841852d36459bffcc9eaf6bbc3fe67762b7
+```
+
+页面图标也内嵌在 HTML 中，不需要额外的图像文件。
