@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="description" content="蛋白设计师：构建氨基酸序列，用二维格子模型和模拟退火探索蛋白质折叠。8 个中文互动关卡，单文件、离线可玩。">
+<title>蛋白设计师 · Protein Designer</title>
+<style>
+:root{color-scheme:dark;--bg:#1a1a2e;--panel:#202035;--inset:#181829;--line:#36364e;--muted:#aaa9bf;--text:#f1f0f8;--lime:#c2e893;--orange:#f3a25e;--blue:#64b7ed;--red:#ed7288;--yellow:#e6c655;--radius:16px;font-family:Inter,"Segoe UI","Microsoft YaHei",system-ui,sans-serif;font-size:14px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);min-width:320px}button,input{font:inherit}button{cursor:pointer;touch-action:manipulation;transition:background .16s,border-color .16s,transform .16s;color:inherit}button:disabled{cursor:not-allowed;opacity:.4}button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--lime);outline-offset:4px}button:hover:not(:disabled){filter:brightness(1.12)}button:active:not(:disabled){transform:translateY(1px)}a{color:var(--lime)}button,input{border:1px solid var(--line);background:transparent;border-radius:9px}button{padding:9px 13px}input{padding:10px 12px;color:var(--text);min-width:0}h1,h2,h3,p{margin:0}button.primary{background:var(--lime);border-color:var(--lime);color:#202c1b;font-weight:750}.mono{font-family:"Cascadia Code",Consolas,monospace;letter-spacing:.035em}.tiny{font-size:11px}.muted{color:var(--muted)}.eyebrow{font-size:10px;letter-spacing:.18em;font-weight:650;color:var(--lime)}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.hidden,[hidden]{display:none!important}
+.topbar{border-bottom:1px solid var(--line);height:74px;display:flex;align-items:center;justify-content:space-between;padding:0 max(28px,calc((100vw - 1280px)/2));gap:16px;background:#1b1b30}.brand{display:flex;align-items:center;gap:11px}.brand canvas{width:40px;height:40px}.brand h1{font-size:20px;letter-spacing:.08em;font-weight:700}.brand small{display:block;font-size:9px;letter-spacing:.19em;color:var(--muted);margin-top:4px}.top-actions{display:flex;align-items:center;gap:22px}.offline{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px}.status-dot{height:6px;width:6px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px #c2e83355}.help-button{border-color:transparent;font-size:12px}.help-button span{display:inline-flex;align-items:center;justify-content:center;border:1px solid #88869e;border-radius:50%;width:17px;height:17px;margin-right:6px}
+main{max-width:1336px;margin:auto;padding:27px 28px 0}.intro{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;gap:20px}.intro h2{font-size:28px;letter-spacing:.04em;font-weight:600;margin:8px 0}.intro p{color:var(--muted);font-size:12px;line-height:1.7}.progress-summary{flex-shrink:0;display:flex;align-items:center;gap:15px}.progress-summary strong{white-space:nowrap;font-size:30px;font-weight:500}.progress-summary strong span{font-size:16px;color:#78778f}.progress-copy{font-size:11px;line-height:1.9;color:var(--muted)}.progress-track{width:100px;height:3px;background:#36364e;margin-top:5px}.progress-track i{display:block;background:var(--lime);height:100%;width:0;transition:width .4s}
+.levels{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-bottom:16px}.level-button{border:1px solid var(--line);padding:10px 7px;display:flex;align-items:center;gap:8px;justify-content:center;font-size:11px;border-radius:9px;white-space:nowrap;background:#1d1d32}.level-number{font-family:Consolas,monospace;font-size:11px;opacity:.65}.level-button.active{border-color:#9bb773;background:#c2e80f0d;color:var(--lime)}.level-button.passed{color:var(--lime)}.level-button:disabled{opacity:.5}.level-button.active .level-number{opacity:1}
+.mission{display:flex;justify-content:space-between;align-items:center;gap:16px;border:1px solid var(--line);background:linear-gradient(100deg,#24283a,#222235);border-radius:12px;padding:18px 22px;margin-bottom:18px}.mission-title{display:flex;align-items:center;gap:10px;margin-bottom:7px}.mission h2{font-size:17px;letter-spacing:.025em}.tag{font-size:10px;padding:3px 7px;border:1px solid #4d5060;color:#c4c4d5;border-radius:5px}.mission p{color:#b1b2c6;font-size:12px;line-height:1.6}.mission-goals{display:flex;gap:20px;flex-shrink:0}.goal{display:flex;flex-direction:column;gap:5px;font-size:10px;color:var(--muted)}.goal strong{color:var(--text);font-size:16px;font-weight:500}.goal strong span{font-size:11px;color:var(--muted)}
+.workspace{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}.panel-head{min-height:56px;padding:17px 20px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}.panel-name{display:flex;align-items:center;gap:9px;font-weight:600;font-size:13px}.panel-name i{height:7px;width:7px;border-radius:50%;background:#a4a4be}.panel-name i.green{background:var(--lime)}.panel-name small{font-size:9px;color:#85859f;font-weight:400;letter-spacing:.09em;margin-left:4px}.panel-actions{display:flex;gap:7px;align-items:center}.small-button{font-size:10px;padding:5px 8px;border-radius:6px;color:var(--muted)}.small-button[aria-pressed=true]{color:var(--lime);border-color:#7a8c65}.canvas-wrap{position:relative;margin:0 12px;background:#1b1b2f;border:1px solid #303047;border-radius:10px;height:268px;overflow:hidden}.protein-canvas{display:block;width:100%;height:100%}.canvas-label{position:absolute;left:14px;top:12px;font-size:9px;color:#87869f;letter-spacing:.12em;pointer-events:none}.canvas-corner{position:absolute;right:13px;bottom:12px;font-size:9px;color:#8c8aa2;letter-spacing:.07em;pointer-events:none}.canvas-empty-hint{position:absolute;left:0;right:0;bottom:38px;text-align:center;pointer-events:none;color:#9695ad;font-size:11px}.panel-foot{display:flex;justify-content:space-between;align-items:center;padding:12px 20px 15px;font-size:10px;color:#a3a1bb;min-height:42px;gap:10px}.mini-key{display:flex;align-items:center;gap:7px}.mini-key i{height:8px;width:8px;border:1px solid #b8d391;border-radius:50%}.panel-foot .lime{color:var(--lime)}.fold-progress{height:2px;background:#2d2d46;margin-top:-2px}.fold-progress i{display:block;height:100%;width:0;background:var(--lime);transition:width .08s}
+.metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0}.metric{position:relative;border:1px solid var(--line);background:#202035;border-radius:12px;padding:15px 19px;display:flex;justify-content:space-between;align-items:center;overflow:hidden;gap:10px}.metric-label{font-size:11px;color:#b1afc4;margin-bottom:8px}.metric-number{font-size:27px;font-weight:550;line-height:1;letter-spacing:-.03em}.metric-number small{font-size:13px;color:var(--muted);padding-left:4px;font-weight:400}.metric-sub{font-size:10px;color:#9896af;margin-top:8px;line-height:1.5}.metric-right{font-size:10px;color:#9392aa;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:9px}.meter-ring{width:42px;height:42px;border-radius:50%;background:conic-gradient(var(--lime) var(--arc,0deg),#34344c 0deg);position:relative}.meter-ring:after{content:'';position:absolute;inset:4px;border-radius:50%;background:#202035}.metric.pass{border-color:#62774f}.metric.pass .metric-number{color:var(--lime)}#energyChart{width:90px;height:36px}.core-dots{display:flex;gap:4px}.core-dots i{width:6px;height:22px;background:#3b3540;border-radius:3px}.core-dots i.on{background:var(--orange)}
+.result-bar{border:1px solid #61784c;border-radius:11px;background:#28372c;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.result-bar.fail{border-color:#59546b;background:#28253b}.result-bar h3{font-size:14px;margin-bottom:5px;color:var(--lime)}.result-bar.fail h3{color:#ebe5fa}.result-bar p{font-size:11px;color:#b8c6b0;line-height:1.6}.result-bar.fail p{color:#bbb3cb}.result-bar button{white-space:nowrap;font-size:12px}
+.editor{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:18px 20px 20px}.editor-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}.editor-title{display:flex;align-items:baseline;gap:12px}.editor-title h2{font-size:14px}.editor-title span{font-size:10px;color:var(--muted)}.edit-actions{display:flex;gap:5px}.edit-actions button{font-size:11px;padding:6px 9px;border-color:transparent;color:var(--muted)}.edit-actions button:hover:not(:disabled){background:#2c2c43}.sequence-container{position:relative;border:1px solid #3a3a54;border-radius:9px;background:#19192d;padding:16px 12px 12px;min-height:79px;overflow-x:auto;scrollbar-width:thin;scrollbar-color:#515169 transparent}.sequence{display:flex;align-items:center;min-width:max-content;gap:7px;padding-bottom:6px}.seq-item{position:relative;width:31px;flex:0 0 31px;display:flex;flex-direction:column;align-items:center;gap:7px}.seq-item:after{content:'';position:absolute;top:14px;left:29px;height:1px;width:12px;background:#686075}.seq-item:last-of-type:after{display:none}.seq-node{position:relative;border:1px solid color-mix(in srgb,var(--res) 75%,transparent);background:color-mix(in srgb,var(--res) 18%,#19192d);color:var(--res);padding:0;width:30px;height:30px;border-radius:50%;font:600 13px Consolas,monospace;z-index:1}.seq-node.selected{box-shadow:0 0 0 3px #ece9fc;border-color:#fff}.seq-item small{font:9px Consolas,monospace;color:#7b7991}.append-button{border:1px dashed #57546b;color:#b9b7cf;width:30px;height:30px;border-radius:50%;padding:0;margin:0 6px 17px;font-size:19px;flex-shrink:0}.sequence-empty{font-size:12px;color:#89869e;padding:10px}.sequence-hint-row{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:#9997b0;margin:9px 0 17px;gap:10px;min-height:17px}.selection-hint{color:var(--lime)}.sequence-count{white-space:nowrap}.sequence-count strong{font-weight:500;color:#e0ddec}
+.palette-row{display:flex;gap:19px;margin-bottom:20px;align-items:flex-start}.palette-group{min-width:0}.palette-group h3{font-size:10px;font-weight:400;color:#a8a6bd;margin-bottom:8px;display:flex;align-items:center;gap:6px}.palette-group h3 i{width:5px;height:5px;border-radius:50%;background:var(--res)}.palette-buttons{display:flex;gap:6px;flex-wrap:wrap}.amino-button{color:var(--res);border-color:color-mix(in srgb,var(--res) 30%,#303047);background:color-mix(in srgb,var(--res) 7%,#202035);width:34px;height:35px;padding:0;font:600 13px Consolas,monospace;border-radius:7px}.amino-button:hover:not(:disabled){background:color-mix(in srgb,var(--res) 23%,#202035)}
+.editor-bottom{padding-top:15px;border-top:1px solid #34344b;display:flex;justify-content:space-between;align-items:center;gap:16px}.sequence-input-wrap{display:flex;align-items:center;gap:7px;flex:1;max-width:390px}.sequence-input-wrap input{width:100%;font:11px Consolas,monospace;letter-spacing:.035em;padding:10px}.sequence-input-wrap button{font-size:11px;white-space:nowrap;padding:9px 11px}.submit-actions{display:flex;gap:10px;align-items:center}.suggest-button{color:#d8d5ec;background:#2a2940;font-size:12px;white-space:nowrap}.suggest-button .spark{color:var(--lime);margin-right:5px}.suggest-button small{font-size:10px;color:#aaa7c2;margin-left:7px}.submit-button{padding:11px 24px;font-size:12px;min-width:160px;display:flex;gap:13px;align-items:center;justify-content:center}.submit-button span{font-size:14px}.input-error{color:#f198a8;font-size:11px;padding-top:9px;min-height:0}
+.knowledge{padding:18px 4px 20px;display:flex;gap:11px;align-items:flex-start}.knowledge-icon{color:var(--lime);font-size:16px;margin-top:1px}.knowledge h3{font-size:10px;color:#c3c1d3;margin-bottom:5px;font-weight:500}.knowledge p{font-size:11px;color:#9592ab;line-height:1.8}.footer{max-width:1280px;margin:auto;padding:18px 0 22px;border-top:1px solid #303047;display:flex;justify-content:space-between;font-size:10px;color:#7f7c98;gap:15px}.footer b{color:#a7a3bc;font-weight:400}.footer button{border:0;padding:0;font-size:10px;color:#918da8}.footer a{text-decoration:none;color:#aaa6bc}.toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);padding:12px 20px;max-width:calc(100vw - 30px);background:#e2e8d8;color:#25301c;border-radius:10px;box-shadow:0 7px 35px #0006;font-size:12px;z-index:20}
+dialog{color:var(--text);background:#23233a;border:1px solid #55556d;border-radius:18px;max-width:610px;width:calc(100% - 32px);padding:0;box-shadow:0 20px 100px #0008}dialog::backdrop{background:#10101cbb;backdrop-filter:blur(5px)}.dialog-head{padding:23px 25px 19px;border-bottom:1px solid #3a3a52;display:flex;justify-content:space-between;gap:12px;align-items:center}.dialog-head h2{font-size:19px;margin-top:8px}.close-modal{padding:3px 9px;border:0;color:var(--muted);font-size:25px}.dialog-body{padding:22px 25px;line-height:1.8;font-size:12px;color:#c4c1d6;max-height:65vh;overflow:auto}.dialog-body p{margin:0 0 13px}.dialog-body h3{font-size:13px;color:var(--text);margin:17px 0 7px}.dialog-body h3:first-child{margin-top:0}.dialog-body table{border-collapse:collapse;width:100%;font-size:11px}.dialog-body td,.dialog-body th{border-bottom:1px solid #3d3a52;padding:8px 5px;text-align:left}.dialog-body th{font-weight:500;color:#d9d5e8}.dialog-body ol{padding-left:20px}.dialog-foot{border-top:1px solid #3a3a52;padding:16px 25px;display:flex;justify-content:flex-end;gap:8px}.dialog-foot button{font-size:12px}.advice-card{border:1px solid #41465a;background:#202538;padding:16px;border-radius:11px;margin:12px 0}.advice-card h3{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin:0 0 8px}.advice-card p{font-size:12px;margin:0}.confidence{font:11px Consolas,monospace;color:var(--lime);white-space:nowrap}.simulation-note{font-size:10px;color:#9693af}.model-badge{display:inline-block;border:1px solid #57546c;border-radius:4px;padding:2px 6px;color:#c1bdd4;font-size:10px;margin-right:7px}.completion-symbol{font-size:44px;text-align:center;color:var(--lime);margin-bottom:12px}
+@media(min-width:1500px){main{padding-top:34px}.canvas-wrap{height:290px}.intro{margin-bottom:30px}.mission{margin-bottom:20px}}
+@media(max-width:1100px){.palette-row{gap:12px;flex-wrap:wrap}.amino-button{width:32px}.panel-name small{display:none}.level-button{font-size:10px;gap:5px}.mission-goals{gap:13px}.sequence-input-wrap{max-width:290px}.intro h2{font-size:26px}}
+@media(max-width:760px){main{padding:22px 16px 0}.topbar{height:66px;padding:0 16px}.brand h1{font-size:17px}.brand small{font-size:8px}.offline{display:none}.top-actions{gap:5px}.help-button{font-size:11px;padding:6px}.intro{margin-bottom:20px;align-items:flex-start}.intro h2{font-size:23px;line-height:1.4;letter-spacing:0}.intro p{font-size:11px;max-width:260px}.progress-copy{display:none}.progress-summary strong{font-size:24px}.progress-summary{padding-top:25px}.levels{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-bottom:13px}.level-button{padding:10px 5px;font-size:10px}.mission{padding:15px;flex-direction:column;align-items:stretch;gap:12px}.mission h2{font-size:15px}.mission p{font-size:11px}.mission-goals{justify-content:flex-start;gap:24px}.goal{flex-direction:row;align-items:baseline;gap:7px}.goal strong{font-size:14px}.workspace{gap:10px}.panel-head{padding:13px 10px 10px}.panel-name{font-size:11px;gap:5px}.panel-actions .small-button{font-size:9px;padding:4px}.canvas-wrap{height:220px;margin:0 7px}.canvas-label{font-size:8px;left:8px;top:9px}.canvas-corner{font-size:8px;right:8px;bottom:9px}.canvas-empty-hint{font-size:9px;bottom:24px;padding:0 8px}.panel-foot{font-size:9px;padding:10px;gap:3px;align-items:flex-start;flex-direction:column;min-height:47px}.metrics{gap:7px;margin:12px 0}.metric{padding:13px 12px;display:block}.metric-label{font-size:10px}.metric-number{font-size:23px}.metric-number small{font-size:11px}.metric-sub{font-size:9px}.metric-right{display:none}.editor{padding:15px 13px}.editor-heading{align-items:flex-start}.editor-title{gap:4px;flex-direction:column}.editor-title h2{font-size:13px}.editor-title span{font-size:9px}.edit-actions{gap:0}.edit-actions button{font-size:10px;padding:5px 6px}.palette-row{gap:14px 18px;margin-bottom:16px}.amino-button{width:36px;height:39px}.palette-buttons{gap:7px}.palette-group:first-child{flex-basis:100%}.editor-bottom{flex-direction:column;align-items:stretch;gap:13px}.sequence-input-wrap{max-width:none}.submit-actions{display:grid;grid-template-columns:1fr 1.3fr;gap:8px}.submit-button{padding:12px;min-width:0;font-size:12px}.suggest-button{font-size:11px;padding:11px 7px}.suggest-button small{margin-left:3px}.result-bar{padding:13px;gap:8px}.result-bar p{font-size:10px}.result-bar h3{font-size:12px}.result-bar button{padding:9px;font-size:10px}.footer{font-size:9px;flex-wrap:wrap;padding:15px 0}.knowledge{padding-top:15px}.knowledge p{font-size:10px}.dialog-body{padding:18px}.dialog-head{padding:20px}.dialog-foot{padding:15px 20px}}
+@media(max-width:420px){.level-button{font-size:9px;gap:3px;padding:10px 3px;min-width:0}.level-number{font-size:9px}.canvas-wrap{height:205px}.panel-head{flex-direction:column;align-items:flex-start;min-height:63px;justify-content:center;gap:6px}.panel-actions{height:19px}.target-head-note{font-size:9px}.mission-goals{gap:14px}.goal{font-size:9px}.metric{padding:12px 9px}.metric-sub{font-size:8px}.sequence-hint-row{font-size:9px}.amino-button{width:33px}.palette-buttons{gap:6px}.intro h2{font-size:21px}.progress-summary strong{font-size:22px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="topbar">
+ <div class="brand"><canvas id="brandCanvas" width="80" height="80" aria-hidden="true"></canvas><div><h1>蛋白设计师</h1><small>PROTEIN DESIGNER</small></div></div>
+ <div class="top-actions"><span class="offline"><i class="status-dot"></i>本地模拟 · 无需联网</span><button id="helpButton" class="help-button"><span>?</span>实验指南</button></div>
+</header>
+<main>
+ <section class="intro"><div><div class="eyebrow">A LITTLE SEQUENCE. A WORLD OF POSSIBILITIES.</div><h2>从一条序列，设计生命的形状。</h2><p>选择氨基酸，观察折叠，让你的蛋白质更接近目标。</p></div><div class="progress-summary"><strong class="mono"><b id="completedCount">00</b><span> / 08</span></strong><div class="progress-copy">实验进度<br>向蛋白设计师进阶<div class="progress-track"><i id="totalProgress"></i></div></div></div></section>
+ <nav id="levels" class="levels" aria-label="选择关卡"></nav>
+ <section class="mission" aria-labelledby="levelTitle"><div><div class="mission-title"><h2 id="levelTitle"></h2><span id="levelTag" class="tag"></span></div><p id="levelHint"></p></div><div class="mission-goals"><div class="goal">目标长度<strong><b id="targetLength"></b> <span>残基</span></strong></div><div class="goal">形状匹配<strong id="matchGoal"></strong></div><div class="goal">稳定能量<strong id="energyGoal"></strong></div></div></section>
+ <section class="workspace" aria-label="折叠实验画布">
+  <article class="panel"><header class="panel-head"><div class="panel-name"><i></i>目标构象<small>TARGET STRUCTURE</small></div><div class="target-head-note muted tiny">轮廓参考</div></header><div class="canvas-wrap"><canvas id="targetCanvas" class="protein-canvas" role="img" aria-label="当前关卡的目标格子轮廓"></canvas><span class="canvas-label mono" id="targetCanvasLabel"></span><span class="canvas-corner mono">2D LATTICE</span></div><footer class="panel-foot"><span class="mini-key"><i></i>绿色节点表示完全埋藏的位置</span><span>允许旋转与镜像匹配</span></footer></article>
+  <article class="panel"><header class="panel-head"><div class="panel-name"><i class="green"></i>预测构象<small>YOUR PREDICTION</small></div><div class="panel-actions"><button id="overlayButton" class="small-button" aria-pressed="false">叠加目标</button><button id="gridButton" class="small-button" aria-pressed="true">网格</button></div></header><div class="canvas-wrap"><canvas id="predictionCanvas" class="protein-canvas" role="img" aria-label="待折叠的氨基酸链"></canvas><span class="canvas-label mono" id="predictionCanvasLabel">READY TO FOLD</span><span class="canvas-corner mono" id="temperatureLabel">T —</span><span id="canvasHint" class="canvas-empty-hint">你的序列已就绪，开始第一次折叠吧</span></div><footer class="panel-foot"><span id="foldStatus">○ 等待提交预测</span><span id="foldStep" class="mono">0 / 50 STEPS</span></footer><div class="fold-progress"><i id="foldProgress"></i></div></article>
+ </section>
+ <section class="metrics" aria-label="预测指标">
+  <article class="metric" id="matchMetric"><div><div class="metric-label">形状匹配度</div><div class="metric-number"><span id="matchValue">—</span><small>%</small></div><div class="metric-sub" id="matchSub">预测后计算轮廓重合度</div></div><div class="metric-right"><span class="meter-ring" id="matchRing"></span><span>SHAPE MATCH</span></div></article>
+  <article class="metric" id="energyMetric"><div><div class="metric-label">折叠能量</div><div class="metric-number"><span id="energyValue">—</span><small>ε</small></div><div class="metric-sub" id="energySub">越低越稳定 · 模型单位</div></div><div class="metric-right"><canvas id="energyChart" width="180" height="72" aria-label="折叠能量变化曲线"></canvas><span>MODEL ENERGY</span></div></article>
+  <article class="metric"><div><div class="metric-label">疏水核心比率</div><div class="metric-number"><span id="coreValue">—</span><small>%</small></div><div class="metric-sub" id="coreSub">完全埋藏的疏水残基占比</div></div><div class="metric-right"><div class="core-dots" id="coreDots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span>HYDROPHOBIC CORE</span></div></article>
+ </section>
+ <section class="result-bar" id="resultBar" hidden aria-live="polite"><div><h3 id="resultTitle"></h3><p id="resultText"></p></div><button id="nextButton" class="primary">下一关 →</button></section>
+ <section class="editor" aria-labelledby="editorTitle">
+  <header class="editor-heading"><div class="editor-title"><h2 id="editorTitle">氨基酸序列工作台</h2><span>SEQUENCE EDITOR</span></div><div class="edit-actions"><button id="starterButton" title="载入本关起始序列">起始序列</button><button id="undoButton" disabled>撤销</button><button id="deleteButton" title="删除选中残基，未选中时删除末尾">⌫ 删除</button><button id="clearButton">清空</button></div></header>
+  <div class="sequence-container" id="sequenceContainer"><div id="sequence" class="sequence" aria-label="氨基酸序列"></div></div>
+  <div class="sequence-hint-row"><span id="editHint">点击下方氨基酸添加 · 点击序列中的节点替换</span><span class="sequence-count"><strong id="sequenceLength">0</strong> / 30 残基</span></div>
+  <div class="palette-row" id="palette" aria-label="氨基酸种类"></div>
+  <div class="editor-bottom"><div class="sequence-input-wrap"><label class="sr-only" for="sequenceInput">输入单字母氨基酸序列</label><input id="sequenceInput" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="或粘贴单字母序列，如 AVLIVLAVA" maxlength="240"><button id="importButton">载入</button></div><div class="submit-actions"><button id="suggestButton" class="suggest-button"><span class="spark">✧</span>AI 建议<small id="hintCount">3 / 3</small></button><button id="predictButton" class="primary submit-button"><span>▷</span><b>提交 AI 预测</b></button></div></div><p id="inputError" class="input-error" role="alert"></p>
+ </section>
+ <aside class="knowledge"><span class="knowledge-icon">✧</span><div><h3>实验笔记 / DID YOU KNOW?</h3><p id="knowledgeText"></p></div></aside>
+ <footer class="footer"><span><b>PROTEIN DESIGNER</b> · 受 AlphaFold 启发的二维折叠小游戏</span><span>HP 格子模型 + 模拟退火 · 教学模拟，非真实 AI 预测</span><button id="resetButton">重置实验进度</button></footer>
+</main>
+<dialog id="helpDialog" aria-labelledby="helpTitle"><header class="dialog-head"><div><div class="eyebrow">YOUR LAB MANUAL</div><h2 id="helpTitle">欢迎来到折叠实验室</h2></div><button class="close-modal" data-close="helpDialog" aria-label="关闭实验指南">×</button></header><div class="dialog-body">
+ <h3>三步完成一次设计</h3><ol><li>在底部选择氨基酸。点击序列节点后再选字母，可以替换该位置；点击「＋」返回追加模式。</li><li>点击「提交 AI 预测」，观察约 3 秒、50 个优化阶段的折叠。可反复预测同一序列，探索不同构象。</li><li>同一次预测的形状匹配度与能量都达标，就会解锁下一关。疏水核心比率是观察指标，不额外限制通关。</li></ol>
+ <h3>本实验的能量规则</h3><table><thead><tr><th>非链上相邻残基之间的接触</th><th>能量变化</th></tr></thead><tbody><tr><td>疏水—疏水，四邻格接触</td><td>−1 ε</td></tr><tr><td>疏水—亲水，四邻格接触</td><td>+0.5 ε</td></tr><tr><td>正—负电荷，四邻格接触</td><td>−1.5 ε</td></tr><tr><td>C—C，曼哈顿距离 ≤ 2 格</td><td>每条二硫键 −3 ε</td></tr></tbody></table>
+ <p class="simulation-note">链上直接相连的残基不计接触能。亲水指极性与带电组；G、P 不贡献接触能，C 只贡献二硫键。C 按最近距离优先配对，每个 C 至多一条键，距离相同按序列位置决定。</p>
+ <h3>如何计算三个指标？</h3><p><b>形状匹配度：</b>尝试平移、四次旋转与镜像，取最大「重合格点数 ÷ 两个轮廓的并集格点数」，即 IoU。长度不同也会扣分；通关用未四舍五入的数值判定。<br><b>能量：</b>上述接触规则之和，单位 ε 是模型单位。<br><b>疏水核心比率：</b>四个相邻格点全部被占据的疏水残基数 ÷ 疏水残基总数；没有疏水残基时显示 0%。</p>
+ <h3>屏幕里的「AI」在做什么？</h3><p>预测使用扩展 HP 二维自避格子模型和模拟退火。4 条独立链从直线出发，经过 50 个温度阶段；每阶段每条链尝试 150 次铰链旋转或局部拐角翻转。降能移动直接接受，升能移动以 exp(−ΔE / T) 的概率接受。最后显示搜索到的最低能量构象，平能时选择更紧凑的构象。</p>
+ <p>目标轮廓从不进入折叠搜索。画布平滑插值仅用于动画，所有评分都来自真实、相连且不重叠的格点构象。「AI 建议」由本地规则生成，每关 3 次；置信度是模拟展示数值，不是 pLDDT 或经过校准的概率。</p>
+ <p class="simulation-note">这是独立制作的教学游戏，与 Google DeepMind 无隶属关系。真实蛋白质是三维结构，远比这个模型复杂。延伸阅读：<a href="https://deepmind.google/science/alphafold/" target="_blank" rel="noopener noreferrer">AlphaFold 官方介绍</a> · <a href="https://www.rcsb.org/" target="_blank" rel="noopener noreferrer">RCSB PDB</a>。链接只在主动打开时联网。</p>
+ <h3>操作与保存</h3><p>鼠标、触屏和键盘均可使用。Tab 切换按钮，Enter 确认；非输入框内按 Backspace / Delete 删除残基，Escape 取消选中。关卡、序列和建议次数自动保存在当前浏览器中；本地文件与在线网页的存档互相独立。</p>
+ </div><footer class="dialog-foot"><button class="primary" data-close="helpDialog">开始实验</button></footer></dialog>
+<dialog id="adviceDialog" aria-labelledby="adviceTitle"><header class="dialog-head"><div><div class="eyebrow">DESIGN ASSISTANT</div><h2 id="adviceTitle">给你的两条设计建议</h2></div><button class="close-modal" data-close="adviceDialog" aria-label="关闭建议">×</button></header><div class="dialog-body"><p><span class="model-badge">规则生成</span>基于当前序列、预测结果与目标轮廓。</p><div id="adviceContent"></div><p class="simulation-note" id="adviceRemaining"></p><p class="simulation-note">置信度仅为模拟值，建议是探索方向，不保证下一次通关。</p></div><footer class="dialog-foot"><button class="primary" data-close="adviceDialog">继续设计 →</button></footer></dialog>
+<dialog id="resetDialog" aria-labelledby="resetTitle"><header class="dialog-head"><h2 id="resetTitle">重新开始实验？</h2><button class="close-modal" data-close="resetDialog" aria-label="关闭重置窗口">×</button></header><div class="dialog-body"><p>这会清除本游戏在当前浏览器中的关卡进度、已编辑序列和建议次数，从第 1 关重新开始。</p></div><footer class="dialog-foot"><button data-close="resetDialog">保留进度</button><button id="confirmResetButton" class="primary">确认重新开始</button></footer></dialog>
+<dialog id="completeDialog" aria-labelledby="completeTitle"><header class="dialog-head"><div><div class="eyebrow">ALL EXPERIMENTS COMPLETED</div><h2 id="completeTitle">你已成为蛋白设计师</h2></div><button class="close-modal" data-close="completeDialog" aria-label="关闭完成窗口">×</button></header><div class="dialog-body"><div class="completion-symbol">✧</div><p>8 个实验全部完成。你已经探索了疏水接触、极性、电荷、二硫键和模拟退火，也体验了从序列到结构的不确定性。</p><p>回到任意关卡，继续尝试更低的能量或更高的形状匹配度。真实的蛋白质世界，还有更多值得探索的可能。</p></div><footer class="dialog-foot"><button class="primary" data-close="completeDialog">继续自由实验</button></footer></dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+<script id="model">
+/* The folding engine is independent of the DOM and never receives a target. */
+'use strict';
+const AMINO = Object.freeze({
+ A:{name:'丙氨酸',group:'hydro'}, V:{name:'缬氨酸',group:'hydro'}, I:{name:'异亮氨酸',group:'hydro'}, L:{name:'亮氨酸',group:'hydro'}, M:{name:'甲硫氨酸',group:'hydro'}, F:{name:'苯丙氨酸',group:'hydro'}, W:{name:'色氨酸',group:'hydro'}, Y:{name:'酪氨酸',group:'hydro'},
+ S:{name:'丝氨酸',group:'polar'}, T:{name:'苏氨酸',group:'polar'}, N:{name:'天冬酰胺',group:'polar'}, Q:{name:'谷氨酰胺',group:'polar'},
+ K:{name:'赖氨酸',group:'positive'}, R:{name:'精氨酸',group:'positive'}, H:{name:'组氨酸',group:'positive'}, D:{name:'天冬氨酸',group:'negative'}, E:{name:'谷氨酸',group:'negative'},
+ G:{name:'甘氨酸',group:'special'}, P:{name:'脯氨酸',group:'special'}, C:{name:'半胱氨酸',group:'cys'}
+});
+const COLORS={hydro:'#f3a25e',polar:'#64b7ed',positive:'#ed7288',negative:'#5379cf',special:'#9394aa',cys:'#e6c655'};
+const LEVELS = [
+ {id:1,name:'紧凑球形',tag:'初识折叠',targetShape:[[0,0],[1,0],[2,0],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2]],matchThreshold:65,energyThreshold:-3,starter:'AVLIVLAVA',hint:'先用疏水残基搭起骨架，试着把长链收拢成一个小方团。',knowledge:'疏水效应是蛋白质折叠的重要驱动力。许多疏水侧链倾向聚集在蛋白质内部，减少与水接触。'},
+ {id:2,name:'疏水之心',tag:'构建核心',targetShape:[[0,0],[1,0],[2,0],[3,0],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2]],matchThreshold:68,energyThreshold:-5,starter:'LVAILVAILVAL',hint:'12 个残基，更多接触。观察橙色节点能否形成紧凑的核心。',knowledge:'序列中相隔较远的残基，折叠后也可能在空间上接触。这里的能量只计算非共价相邻的残基对。'},
+ {id:3,name:'极性外衣',tag:'内外有别',targetShape:[[1,0],[2,0],[3,0],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[3,3],[2,3],[1,3]],matchThreshold:66,energyThreshold:-5,starter:'SLVAILVAILVALT',hint:'试着在末端放少量极性残基，再比较它们对能量和形状的影响。',knowledge:'极性侧链常见于接触水的蛋白质表面。本模型没有显式模拟水或氢键，因此只演示其中一部分效应。'},
+ {id:4,name:'电荷搭桥',tag:'静电作用',targetShape:[[0,0],[1,0],[2,0],[3,0],[3,1],[3,2],[3,3],[2,3],[1,3],[0,3],[0,2],[0,1],[1,1],[2,1],[2,2],[1,2]],matchThreshold:68,energyThreshold:-8,starter:'KEKDKERDKEKDKERD',hint:'正负交替的电荷可以形成额外接触；红色与深蓝色相邻有利。',knowledge:'带相反电荷的侧链可以形成盐桥。本模型把组氨酸简化为正电荷；真实电荷状态还受到 pH 等条件影响。'},
+ {id:5,name:'二硫锁扣',tag:'共价加固',targetShape:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[5,1],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2]],matchThreshold:60,energyThreshold:-10,starter:'CLVAILVCVLAILVCLVC',hint:'在序列上相隔较远的位置放入 C，观察黄色二硫键能否把链锁住。',knowledge:'两个半胱氨酸可形成二硫键，帮助稳定结构。本游戏每个 C 最多参与一条二硫键，距离条件是教学简化。'},
+ {id:6,name:'协同折叠',tag:'多种相互作用',targetShape:[[0,0],[1,0],[2,0],[3,0],[4,0],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[4,3],[3,3],[2,3],[1,3],[0,3]],matchThreshold:67,energyThreshold:-12,starter:'CLVAILVCLVAILVCLVILC',hint:'尝试把疏水接触与二硫键组合起来。能量越低，模型中的结构越稳定。',knowledge:'真实蛋白质的稳定性来自多种相互作用共同贡献。降低一种能量项，不一定让整体结构更接近你的目标。'},
+ {id:7,name:'折叠迷宫',tag:'能量景观',targetShape:[[1,0],[2,0],[3,0],[4,0],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[5,3],[4,3],[3,3],[2,3],[1,3],[1,4],[2,4],[3,4],[4,4]],matchThreshold:67,energyThreshold:-15,starter:'CLVAILVCLVAILVCLVAILVCLV',hint:'较长的链更容易落入局部低谷。调整一两个位置，也可以重新预测探索另一条路径。',knowledge:'模拟退火在高温时允许暂时升高能量，以跳出局部低谷；降温后更倾向接受能量降低的移动。'},
+ {id:8,name:'设计师试炼',tag:'最终挑战',targetShape:[[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[5,1],[4,1],[3,1],[2,1],[1,1],[0,1],[0,2],[1,2],[2,2],[3,2],[4,2],[5,2],[5,3],[4,3],[3,3],[2,3],[1,3],[0,3],[0,4],[1,4],[2,4],[3,4],[4,4],[5,4]],matchThreshold:70,energyThreshold:-20,starter:'CLVAILVCLVAILVCLVAILVCLVAILVCC',hint:'用满 30 个位置，同时满足轮廓与稳定性。比较每次结果，逐步改进你的设计。',knowledge:'从序列预测结构与为目标结构设计序列，是相关但不同的任务。本游戏是二维格子实验，不能用于真实蛋白质预测或设计。'}
+];
+function seededRandom(seed) { return function(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t=Math.imul(seed ^ seed >>> 15,1|seed);t=t+Math.imul(t ^ t >>> 7,61|t)^t;return ((t ^ t >>> 14)>>>0)/4294967296;}; }
+function latticeKey(p){return p[0]+','+p[1];}
+function distance(a,b){return Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1]);}
+function validChain(points){return new Set(points.map(latticeKey)).size===points.length && points.every((p,i)=>Number.isInteger(p[0])&&Number.isInteger(p[1])&&(!i||distance(p,points[i-1])===1));}
+function cysteineBonds(seq,points){
+ const pairs=[];
+ for(let i=0;i<seq.length;i++) if(seq[i]==='C') for(let j=i+2;j<seq.length;j++) if(seq[j]==='C') {const d=distance(points[i],points[j]);if(d<=2)pairs.push({i,j,d});}
+ pairs.sort((a,b)=>a.d-b.d||a.i-b.i||a.j-b.j);
+ const used=new Set(), bonds=[];
+ for(const p of pairs) if(!used.has(p.i)&&!used.has(p.j)){bonds.push([p.i,p.j]);used.add(p.i);used.add(p.j);}
+ return bonds;
+}
+function energy(seq,points){
+ let value=0;
+ for(let i=0;i<seq.length;i++)for(let j=i+2;j<seq.length;j++){
+  if(distance(points[i],points[j])!==1)continue;
+  const a=AMINO[seq[i]].group,b=AMINO[seq[j]].group;
+  if(a==='hydro'&&b==='hydro')value-=1;
+  else if((a==='hydro'&&['polar','positive','negative'].includes(b))||(b==='hydro'&&['polar','positive','negative'].includes(a)))value+=.5;
+  if((a==='positive'&&b==='negative')||(b==='positive'&&a==='negative'))value-=1.5;
+ }
+ return value-3*cysteineBonds(seq,points).length;
+}
+function transformed(points,k){return points.map(([x,y])=>{if(k>=4)x=-x;for(let r=0;r<k%4;r++){const a=x;x=-y;y=a;}return [x,y];});}
+function matchShape(points,target){
+ if(!points.length)return {score:0,aligned:[],overlap:0};
+ let best=0,bestPoints=points,offset=[0,0];
+ for(let k=0;k<8;k++){
+  const p=transformed(points,k),counts=new Map();
+  for(const a of p)for(const b of target){const dx=b[0]-a[0],dy=b[1]-a[1],key=dx+','+dy,count=(counts.get(key)||0)+1;counts.set(key,count);if(count>best){best=count;bestPoints=p;offset=[dx,dy];}}
+ }
+ return {score:100*best/(points.length+target.length-best),overlap:best,aligned:bestPoints.map(p=>[p[0]+offset[0],p[1]+offset[1]])};
+}
+function coreRatio(seq,points){
+ const occupied=new Set(points.map(latticeKey));let total=0,buried=0;
+ for(let i=0;i<seq.length;i++)if(AMINO[seq[i]].group==='hydro'){
+  total++;const [x,y]=points[i];if([[x-1,y],[x+1,y],[x,y-1],[x,y+1]].every(p=>occupied.has(latticeKey(p))))buried++;
+ }
+ return {ratio:total?100*buried/total:0,buried,total};
+}
+function pivotMove(points,rng){
+ const n=points.length, next=points.map(p=>p.slice());
+ if(rng()<.22 && n>2){
+  const i=1+Math.floor(rng()*(n-2)),a=points[i-1],b=points[i+1];
+  if(a[0]===b[0]||a[1]===b[1])return null;
+  next[i]=[a[0]+b[0]-points[i][0],a[1]+b[1]-points[i][1]];
+ } else {
+  const hinge=Math.floor(rng()*n),turn=1+Math.floor(rng()*3),head=rng()<.5,[px,py]=points[hinge];
+  if((head&&hinge===0)||(!head&&hinge===n-1))return null;
+  for(let i=head?0:hinge+1;i<(head?hinge:n);i++){
+   let x=points[i][0]-px,y=points[i][1]-py;for(let r=0;r<turn;r++){const a=x;x=-y;y=a;}next[i]=[px+x,py+y];
+  }
+ }
+ const occupied=new Set();for(const p of next){const key=latticeKey(p);if(occupied.has(key))return null;occupied.add(key);}return next;
+}
+function compactness(points){const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);return (Math.max(...xs)-Math.min(...xs)+1)*(Math.max(...ys)-Math.min(...ys)+1);}
+class Annealer {
+ constructor(seq,seed){
+  this.seq=seq;this.rng=seededRandom(seed);this.frame=0;this.attempts=0;this.accepted=0;
+  const line=Array.from(seq,(_,i)=>[i,0]);
+  this.best=line;this.bestEnergy=energy(seq,line);this.bestArea=compactness(line);
+  this.chains=Array.from({length:4},()=>({points:line,energy:this.bestEnergy}));
+ }
+ step(){
+  const temperature=3.2*Math.pow(.035/3.2,this.frame/49);
+  for(const chain of this.chains)for(let trial=0;trial<150;trial++){
+   this.attempts++;const next=pivotMove(chain.points,this.rng);if(!next)continue;
+   const value=energy(this.seq,next),delta=value-chain.energy;
+   if(delta<=0||this.rng()<Math.exp(-delta/temperature)){
+    chain.points=next;chain.energy=value;this.accepted++;
+    if(value<=this.bestEnergy){const area=compactness(next);if(value<this.bestEnergy||area<this.bestArea){this.best=next;this.bestEnergy=value;this.bestArea=area;}}
+   }
+  }
+  this.frame++;
+  const current=this.frame===50?{points:this.best,energy:this.bestEnergy}:this.chains.reduce((a,b)=>a.energy<b.energy?a:b);
+  return {points:current.points,energy:current.energy,temperature,frame:this.frame,bestEnergy:this.bestEnergy};
+ }
+}
+const ProteinModel={AMINO,COLORS,LEVELS,seededRandom,validChain,distance,energy,cysteineBonds,matchShape,coreRatio,Annealer};
+
+</script>
+<script id="app">
+'use strict';
+const $=id=>document.getElementById(id);
+const SAVE_KEY='protein-designer-v1';
+let storageOK=true, toastTimer;
+function blankSave(){return {version:1,current:1,done:[],levels:{}};}
+function readSave(){
+ try{
+  const raw=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(!raw||raw.version!==1)return blankSave();
+  const clean=blankSave();clean.done=Array.isArray(raw.done)?[...new Set(raw.done.filter(x=>Number.isInteger(x)&&x>=1&&x<=8))]:[];
+  let max=1;while(clean.done.includes(max)&&max<8)max++;
+  clean.current=Number.isInteger(raw.current)?Math.min(max,Math.max(1,raw.current)):1;
+  for(const level of LEVELS){const record=raw.levels?.[level.id];if(!record||typeof record!=='object')continue;
+   clean.levels[level.id]={seq:typeof record.seq==='string'&&record.seq.length<=30&&[...record.seq].every(a=>AMINO[a])?record.seq:level.starter,hints:Number.isInteger(record.hints)?Math.min(3,Math.max(0,record.hints)):0,runs:Number.isInteger(record.runs)?Math.min(100000,Math.max(0,record.runs)):0};
+  }return clean;
+ }catch{storageOK=false;return blankSave();}
+}
+let save=readSave(),currentLevel=save.current,selected=-1,history=[],busy=false,result=null,displayPoints=[],showOverlay=false,showGrid=true,trace=[],animation=null,previousFocus=null;
+const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function level(){return LEVELS[currentLevel-1];}
+function record(){if(!save.levels[currentLevel])save.levels[currentLevel]={seq:level().starter,hints:0,runs:0};return save.levels[currentLevel];}
+function sequence(){return record().seq;}
+function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch{storageOK=false;showStorageStatus();}}
+function showStorageStatus(){if(!storageOK){document.querySelector('.offline').textContent='临时模式 · 进度仅本次有效';document.querySelector('.offline').title='浏览器存储不可用，游戏仍可正常运行';}}
+function toast(message){$('toast').textContent=message;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3200);}
+function unlocked(){let value=1;while(save.done.includes(value)&&value<8)value++;return value;}
+function renderLevels(){
+ $('levels').replaceChildren();
+ for(const l of LEVELS){const b=document.createElement('button');b.className='level-button'+(l.id===currentLevel?' active':'')+(save.done.includes(l.id)?' passed':'');b.disabled=busy||l.id>unlocked();b.setAttribute('aria-current',l.id===currentLevel?'step':'false');b.title=l.id>unlocked()?'完成前一关后解锁':l.name;b.setAttribute('aria-label',`第 ${l.id} 关 ${l.name}${save.done.includes(l.id)?'，已完成':''}`);
+  const num=document.createElement('span');num.className='level-number';num.textContent=save.done.includes(l.id)?'✓':String(l.id).padStart(2,'0');b.append(num,document.createTextNode(l.name));b.addEventListener('click',()=>loadLevel(l.id));$('levels').append(b);
+ }
+ $('completedCount').textContent=String(save.done.length).padStart(2,'0');$('totalProgress').style.width=(save.done.length/8*100)+'%';
+}
+function loadLevel(id){
+ if(busy||id>unlocked())return;currentLevel=id;save.current=id;selected=-1;history=[];result=null;trace=[];animation=null;showOverlay=false;
+ $('overlayButton').setAttribute('aria-pressed','false');$('levelTitle').textContent=`${String(id).padStart(2,'0')} / ${level().name}`;$('levelTag').textContent=level().tag;$('levelHint').textContent=level().hint;$('targetLength').textContent=level().targetShape.length;$('matchGoal').textContent='≥ '+level().matchThreshold+'%';$('energyGoal').textContent='≤ '+level().energyThreshold+' ε';$('knowledgeText').textContent=level().knowledge;$('targetCanvasLabel').textContent=`TARGET · ${String(level().targetShape.length).padStart(2,'0')} RESIDUES`;
+ $('sequenceInput').value='';$('inputError').textContent='';renderLevels();renderEditor();resetPrediction();persist();renderTarget();
+}
+function renderEditor(){
+ $('sequence').replaceChildren();
+ if(!sequence().length){const t=document.createElement('span');t.className='sequence-empty';t.textContent='从下方挑选第一个氨基酸，开始你的设计';$('sequence').append(t);}
+ [...sequence()].forEach((aa,index)=>{
+  const item=document.createElement('div');item.className='seq-item';item.style.setProperty('--res',COLORS[AMINO[aa].group]);
+  const b=document.createElement('button');b.className='seq-node'+(selected===index?' selected':'');b.textContent=aa;b.disabled=busy;b.setAttribute('aria-pressed',String(selected===index));b.setAttribute('aria-label',`第 ${index+1} 位 ${aa} ${AMINO[aa].name}，点击替换`);b.title=`${index+1} · ${AMINO[aa].name} (${aa})`;b.addEventListener('click',()=>{selected=selected===index?-1:index;renderEditor();});const n=document.createElement('small');n.textContent=String(index+1).padStart(2,'0');item.append(b,n);$('sequence').append(item);
+ });
+ const append=document.createElement('button');append.className='append-button';append.textContent='+';append.title='取消选中，追加残基';append.setAttribute('aria-label','切换为追加残基');append.disabled=busy;append.onclick=()=>{selected=-1;renderEditor();};$('sequence').append(append);
+ $('sequenceLength').textContent=sequence().length;$('editHint').textContent=selected<0?'点击下方氨基酸添加 · 点击序列中的节点替换':`正在替换第 ${selected+1} 位 ${sequence()[selected]} · 点击「＋」返回追加`;$('editHint').className=selected>=0?'selection-hint':'';
+ $('hintCount').textContent=`${3-record().hints} / 3`;
+ document.querySelectorAll('.amino-button').forEach(b=>b.disabled=busy||(selected<0&&sequence().length>=30));
+ for(const id of ['starterButton','importButton','sequenceInput'])$(id).disabled=busy;
+ $('predictButton').disabled=busy;$('undoButton').disabled=busy||!history.length;$('deleteButton').disabled=busy||!sequence().length;$('clearButton').disabled=busy||!sequence().length;$('suggestButton').disabled=busy||record().hints>=3;$('resetButton').disabled=busy;$('overlayButton').disabled=busy||!result;
+}
+function editSequence(next){
+ if(busy||next===sequence())return;if(next.length>30)return toast('最多可以放入 30 个残基');
+ history.push(sequence());if(history.length>50)history.shift();record().seq=next;if(selected>=next.length)selected=-1;result=null;trace=[];$('inputError').textContent='';persist();renderEditor();resetPrediction();
+}
+function addResidue(aa){
+ if(busy)return;const replacement=selected>=0;editSequence(replacement?sequence().slice(0,selected)+aa+sequence().slice(selected+1):sequence()+aa);
+ if(!replacement)$('sequenceContainer').scrollTo({left:$('sequenceContainer').scrollWidth,behavior:reduceMotion?'instant':'smooth'});
+}
+function removeResidue(){if(!sequence().length||busy)return;const i=selected>=0?selected:sequence().length-1;editSequence(sequence().slice(0,i)+sequence().slice(i+1));}
+function createPalette(){
+ const groups=[{label:'疏水',key:'hydro',letters:'AVILMFWY'},{label:'极性',key:'polar',letters:'STNQ'},{label:'带电 + / −',key:'positive',letters:'KRHDE'},{label:'特殊',key:'special',letters:'GPC'}];
+ for(const group of groups){const block=document.createElement('div');block.className='palette-group';block.style.setProperty('--res',COLORS[group.key]);const h=document.createElement('h3');const dot=document.createElement('i');h.append(dot,document.createTextNode(group.label));const buttons=document.createElement('div');buttons.className='palette-buttons';for(const aa of group.letters){const b=document.createElement('button');b.className='amino-button';b.style.setProperty('--res',COLORS[AMINO[aa].group]);b.textContent=aa;b.title=`${AMINO[aa].name} (${aa})${aa==='C'?' · 二硫键':''}`;b.setAttribute('aria-label',`选择 ${aa} ${AMINO[aa].name}`);b.onclick=()=>addResidue(aa);buttons.append(b);}block.append(h,buttons);$('palette').append(block);}
+}
+function resetPrediction(){
+ displayPoints=Array.from(sequence(),(_,i)=>[i,0]);$('resultBar').hidden=true;$('canvasHint').hidden=false;$('canvasHint').textContent=sequence().length?'你的序列已就绪，开始一次折叠吧':'添加氨基酸，让设计从这里开始';$('predictionCanvasLabel').textContent='READY TO FOLD';$('temperatureLabel').textContent='T —';$('foldStatus').textContent='○ 等待提交预测';$('foldStatus').className='';$('foldStep').textContent='0 / 50 STEPS';$('foldProgress').style.width='0%';
+ for(const id of ['matchValue','energyValue','coreValue'])$(id).textContent='—';$('matchSub').textContent='预测后计算轮廓重合度';$('energySub').textContent='越低越稳定 · 模型单位';$('coreSub').textContent='完全埋藏的疏水残基占比';$('matchMetric').classList.remove('pass');$('energyMetric').classList.remove('pass');$('matchRing').style.setProperty('--arc','0deg');document.querySelectorAll('#coreDots i').forEach(i=>i.classList.remove('on'));$('predictionCanvas').setAttribute('aria-label',`${sequence().length} 个残基的未折叠直线链`);drawEnergyChart();renderPrediction();
+}
+function canvasContext(canvas){const rect=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);const w=rect.width,h=rect.height;if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);}const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);return {ctx,w,h};}
+function mapping(points,w,h){
+ if(!points.length)return {scale:30,cx:0,cy:0,map:p=>[w/2,h/2]};
+ const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]),minX=Math.min(...xs),maxX=Math.max(...xs),minY=Math.min(...ys),maxY=Math.max(...ys),scale=Math.min(38,(w-48)/Math.max(1,maxX-minX+1),(h-65)/Math.max(1,maxY-minY+1)),cx=(minX+maxX)/2,cy=(minY+maxY)/2;
+ return {scale,cx,cy,map:p=>[w/2+(p[0]-cx)*scale,h/2+5+(p[1]-cy)*scale]};
+}
+function grid(ctx,w,h,map){
+ if(!showGrid)return;const scale=Math.max(12,map.scale),origin=map.map([0,0]),ox=((origin[0]%scale)+scale)%scale,oy=((origin[1]%scale)+scale)%scale;
+ ctx.fillStyle='#6e6d8d25';for(let x=ox;x<w;x+=scale)for(let y=oy;y<h;y+=scale){ctx.beginPath();ctx.arc(x,y,.85,0,Math.PI*2);ctx.fill();}
+ ctx.strokeStyle='#8d89a628';ctx.lineWidth=1;const m=12,l=8;ctx.beginPath();ctx.moveTo(m+l,m);ctx.lineTo(m,m);ctx.lineTo(m,m+l);ctx.moveTo(w-m-l,h-m);ctx.lineTo(w-m,h-m);ctx.lineTo(w-m,h-m-l);ctx.stroke();
+}
+function drawChain(ctx,pixels,seq,radius,isTarget=false,logicalPoints=[]){
+ if(!pixels.length)return;
+ ctx.lineJoin='round';ctx.lineCap='round';ctx.strokeStyle=isTarget?'#9299a94a':'#ada9c56e';ctx.lineWidth=isTarget?2:2.5;ctx.beginPath();pixels.forEach((p,i)=>i?ctx.lineTo(...p):ctx.moveTo(...p));ctx.stroke();
+ if(!isTarget&&logicalPoints.length===seq.length){
+  const bonds=cysteineBonds(seq,logicalPoints);ctx.strokeStyle=COLORS.cys;ctx.lineWidth=2;ctx.setLineDash([4,3]);for(const [a,b] of bonds){ctx.beginPath();ctx.moveTo(...pixels[a]);ctx.lineTo(...pixels[b]);ctx.stroke();}ctx.setLineDash([]);
+ }
+ const occupied=new Set(logicalPoints.map(latticeKey));
+ for(let i=0;i<pixels.length;i++){
+  const [x,y]=pixels[i],point=logicalPoints[i];const inside=isTarget&&point&&[[point[0]-1,point[1]],[point[0]+1,point[1]],[point[0],point[1]-1],[point[0],point[1]+1]].every(p=>occupied.has(latticeKey(p)));
+  const color=isTarget?(inside?'#c2e893':'#aaa8c3'):COLORS[AMINO[seq[i]].group];
+  if(isTarget){ctx.fillStyle=inside?'#c2e8930a':'#9f9bb608';ctx.strokeStyle=inside?'#c2e89332':'#9f9bb61c';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(x-radius*1.65,y-radius*1.65,radius*3.3,radius*3.3,9);ctx.fill();ctx.stroke();}
+  ctx.shadowColor=color;ctx.shadowBlur=isTarget?0:8;ctx.fillStyle=isTarget?(inside?'#a8cb74':'#5c5d76'):color;ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=isTarget?'#d0cde35c':'#ffffff44';ctx.lineWidth=1;ctx.stroke();
+  if(radius>=6){ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`600 ${isTarget?Math.max(8,radius*.85):Math.max(9,radius*1.04)}px Consolas, monospace`;ctx.fillText(isTarget?String(i+1):seq[i],x,y+.5);}
+ }
+ if(!isTarget&&pixels.length>1&&radius>=5){ctx.font='9px Consolas, monospace';ctx.fillStyle='#aaa6be';ctx.textAlign='center';ctx.fillText('N',pixels[0][0],pixels[0][1]-radius-10);const last=pixels.at(-1);ctx.fillText('C',last[0],last[1]+radius+13);}
+}
+function renderTarget(){const {ctx,w,h}=canvasContext($('targetCanvas')),points=level().targetShape,map=mapping(points,w,h);grid(ctx,w,h,map);drawChain(ctx,points.map(map.map),'',Math.min(10,map.scale*.30),true,points);}
+function renderPrediction(interpolation){
+ const {ctx,w,h}=canvasContext($('predictionCanvas'));let points=displayPoints,union=points,ghost=null;
+ if(result&&showOverlay&&!busy){points=result.match.aligned;ghost=level().targetShape;union=points.concat(ghost);}
+ const map=mapping(union,w,h);grid(ctx,w,h,map);
+ if(ghost){ctx.strokeStyle='#c2e89380';ctx.fillStyle='#c2e89306';ctx.setLineDash([3,4]);ctx.lineWidth=1;for(const p of ghost){const [x,y]=map.map(p),r=map.scale*.43;ctx.beginPath();ctx.roundRect(x-r,y-r,r*2,r*2,5);ctx.fill();ctx.stroke();}ctx.setLineDash([]);}
+ let pixels=points.map(map.map),radius=Math.min(10,map.scale*.32);
+ if(interpolation&&!reduceMotion){const prev=mapping(interpolation.from,w,h);const old=interpolation.from.map(prev.map),t=interpolation.t,smoothed=t*t*(3-2*t);pixels=pixels.map((p,i)=>old[i]?[old[i][0]+(p[0]-old[i][0])*smoothed,old[i][1]+(p[1]-old[i][1])*smoothed]:p);radius=Math.min(10,(prev.scale+(map.scale-prev.scale)*smoothed)*.32);}
+ drawChain(ctx,pixels,sequence(),radius,false,displayPoints);
+}
+function drawEnergyChart(){const {ctx,w,h}=canvasContext($('energyChart'));if(trace.length<2)return;const min=Math.min(...trace)-1,max=Math.max(...trace)+1;ctx.strokeStyle='#c2e893';ctx.lineWidth=1.5;ctx.lineJoin='round';ctx.beginPath();trace.forEach((v,i)=>{const x=2+i*(w-4)/(trace.length-1),y=3+(max-v)/(max-min)*(h-6);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();}
+function renderMetrics(points,value){
+ const match=matchShape(points,level().targetShape),core=coreRatio(sequence(),points),matchPass=match.score>=level().matchThreshold,energyPass=value<=level().energyThreshold;
+ // Floor to one decimal so a just-below-threshold value never looks like a pass.
+ $('matchValue').textContent=(Math.floor(match.score*10)/10).toFixed(1);$('energyValue').textContent=Number.isInteger(value)?value:value.toFixed(1);$('coreValue').textContent=Math.round(core.ratio);$('matchSub').textContent=`${matchPass?'✓ 达到':'目标'} ${level().matchThreshold}% · 轮廓交并比`;$('energySub').textContent=`${energyPass?'✓ 达到':'目标'} ≤ ${level().energyThreshold} ε · 越低越稳定`;$('coreSub').textContent=core.total?`${core.buried} / ${core.total} 个疏水残基完全埋藏`:'无疏水残基 · 核心比率为 0%';$('matchMetric').classList.toggle('pass',matchPass);$('energyMetric').classList.toggle('pass',energyPass);$('matchRing').style.setProperty('--arc',match.score*3.6+'deg');document.querySelectorAll('#coreDots i').forEach((dot,i)=>dot.classList.toggle('on',i<Math.round(core.ratio/12.5)));drawEnergyChart();return {match,core};
+}
+function startPrediction(){
+ if(busy)return;if(sequence().length<4){$('inputError').textContent='请先添加至少 4 个残基再提交预测。';toast('序列还太短，需要至少 4 个残基');return;}
+ busy=true;selected=-1;result=null;trace=[energy(sequence(),Array.from(sequence(),(_,i)=>[i,0]))];$('inputError').textContent='';$('resultBar').hidden=true;$('canvasHint').hidden=true;$('predictButton').innerHTML='<span>◌</span><b>正在折叠…</b>';$('predictionCanvasLabel').textContent='ANNEALING IN PROGRESS';$('foldStatus').textContent='◌ 搜索低能量构象';$('foldStatus').className='lime';
+ const seed=new Uint32Array(1);crypto.getRandomValues(seed);const solver=new Annealer(sequence(),seed[0]);record().runs++;persist();displayPoints=Array.from(sequence(),(_,i)=>[i,0]);
+ animation={solver,seed:seed[0],frameStart:performance.now(),lastStep:performance.now(),from:displayPoints,start:performance.now(),raf:0};renderEditor();renderLevels();renderPrediction();animation.raf=requestAnimationFrame(tick);
+}
+function tick(now){
+ if(!animation)return;const a=animation;
+ try{
+  if(now-a.lastStep>=60&&a.solver.frame<50){
+   a.from=displayPoints;a.frameStart=now;const snap=a.solver.step();displayPoints=snap.points;a.lastStep=now;trace.push(snap.energy);renderMetrics(snap.points,snap.energy);$('foldStep').textContent=`${snap.frame} / 50 STEPS`;$('foldProgress').style.width=snap.frame*2+'%';$('temperatureLabel').textContent='T '+snap.temperature.toFixed(2);
+  }
+  renderPrediction({from:a.from,t:Math.min(1,(now-a.frameStart)/60)});
+  if(a.solver.frame===50&&now-a.frameStart>=60){finishPrediction(a);return;}
+  a.raf=requestAnimationFrame(tick);
+ }catch(error){busy=false;animation=null;result=null;renderEditor();renderLevels();$('predictButton').innerHTML='<span>▷</span><b>提交 AI 预测</b>';resetPrediction();$('inputError').textContent='本次模拟未完成，请重试。';console.error(error);}
+}
+function finishPrediction(a){
+ busy=false;animation=null;displayPoints=a.solver.best;const values=renderMetrics(displayPoints,a.solver.bestEnergy),pass=values.match.score>=level().matchThreshold&&a.solver.bestEnergy<=level().energyThreshold;
+ result={...values,points:displayPoints,energy:a.solver.bestEnergy,pass,seed:a.seed,duration:performance.now()-a.start,attempts:a.solver.attempts};
+ $('predictionCanvasLabel').textContent='PREDICTION COMPLETE';$('foldStatus').textContent=`✓ 折叠完成 · ${cysteineBonds(sequence(),displayPoints).length} 条二硫键`;$('foldStatus').title=`随机种子 ${a.seed} · ${a.solver.attempts.toLocaleString()} 次候选移动`;$('predictButton').innerHTML='<span>↻</span><b>再次 AI 预测</b>';$('predictionCanvas').setAttribute('aria-label',`折叠完成，形状匹配度 ${values.match.score.toFixed(1)}%，能量 ${result.energy}，${pass?'已达标':'未达标'}`);
+ $('resultBar').hidden=false;$('resultBar').classList.toggle('fail',!pass);
+ if(pass){
+  if(!save.done.includes(currentLevel))save.done.push(currentLevel);persist();$('resultTitle').textContent=currentLevel===8?'✧ 最终实验达标，8 关全部完成！':'✓ 实验成功！你的设计同时达到了两项目标';$('resultText').textContent=currentLevel===8?'你可以返回任意关卡，继续探索更好的序列。':`已解锁第 ${currentLevel+1} 关「${LEVELS[currentLevel].name}」。继续探索新的相互作用。`;$('nextButton').hidden=false;$('nextButton').textContent=currentLevel===8?'领取设计师称号 ✧':'下一关 →';
+ }else{
+  $('resultTitle').textContent='再调整一点，新的构象在等你';const gaps=[];if(values.match.score<level().matchThreshold)gaps.push(`匹配度还差 ${(level().matchThreshold-values.match.score).toFixed(1)} 个百分点`);if(result.energy>level().energyThreshold)gaps.push(`能量还需降低 ${(result.energy-level().energyThreshold).toFixed(1)} ε`);$('resultText').textContent=gaps.join('；')+'。可以修改序列、查看建议或再次预测。';$('nextButton').hidden=true;
+ }
+ renderEditor();renderLevels();renderPrediction();
+}
+function makeAdvice(){
+ const seq=sequence(),target=level().targetShape,advice=[],used=new Set();
+ function add(title,text,confidence){advice.push({title,text,confidence});}
+ if(seq.length!==target.length){add('先对齐目标长度',seq.length<target.length?`目标有 ${target.length} 个格点，你现在有 ${seq.length} 个残基。先在末尾添加 ${target.length-seq.length} 个残基，可从 L（亮氨酸）或 V（缬氨酸）开始，再观察轮廓变化。`:`目标有 ${target.length} 个格点，你现在有 ${seq.length} 个残基。先从末尾删除 ${seq.length-target.length} 个残基，减少轮廓匹配的长度惩罚。`,96);}
+ if(currentLevel>=5&&seq.split('C').length-1<2){
+  let pair=null;for(let i=0;i<Math.min(seq.length,target.length)&&!pair;i++)for(let j=i+3;j<Math.min(seq.length,target.length);j++)if(distance(target[i],target[j])<=2){pair=[i,j];break;}
+  if(pair){pair.forEach(i=>used.add(i));add('尝试一对半胱氨酸',`把第 ${pair[0]+1} 位 ${seq[pair[0]]} 和第 ${pair[1]+1} 位 ${seq[pair[1]]} 替换成 C。它们在目标参考链中靠近，值得尝试形成二硫键；实际预测还需验证两者能否相遇。`,87);}
+ }
+ if(advice.length<2&&currentLevel===4){
+  const pos=[...seq].findIndex((aa,i)=>i%2===0&&AMINO[aa].group!=='positive');const neg=[...seq].findIndex((aa,i)=>i%2===1&&AMINO[aa].group!=='negative');
+  if(pos>=0||neg>=0){const changes=[];if(pos>=0){changes.push(`第 ${pos+1} 位 ${seq[pos]} → K`);used.add(pos);}if(neg>=0){changes.push(`第 ${neg+1} 位 ${seq[neg]} → E`);used.add(neg);}add('排列互补的电荷',`试试${changes.join('，')}。正负交替能增加非链上相邻的异号电荷接触机会，再预测比较能量。`,88);}
+ }
+ if(advice.length<2){
+  const occupied=new Set(target.map(latticeKey)),candidates=[];for(let i=0;i<Math.min(seq.length,target.length);i++){if(used.has(i)||AMINO[seq[i]].group==='hydro'||seq[i]==='C')continue;const [x,y]=target[i],degree=[[x-1,y],[x+1,y],[x,y-1],[x,y+1]].filter(p=>occupied.has(latticeKey(p))).length;candidates.push({i,degree});}candidates.sort((a,b)=>b.degree-a.degree);
+  if(candidates.length){const i=candidates[0].i;used.add(i);add('增强疏水接触',`试把第 ${i+1} 位 ${seq[i]}（${AMINO[seq[i]].name}）换成 L（亮氨酸）。目标参考链的这个位置有 ${candidates[0].degree} 个相邻格点，可作为增加疏水接触的候选位置；预测后再检查是否有改善。`,84);}
+ }
+ if(advice.length<2&&result){
+  const free=[];for(let i=0;i<seq.length;i++)if(!used.has(i)&&AMINO[seq[i]].group==='hydro'){let contacts=0;for(let j=0;j<seq.length;j++)if(Math.abs(i-j)>1&&distance(result.points[i],result.points[j])===1&&AMINO[seq[j]].group==='hydro')contacts++;if(!contacts)free.push(i);}
+  if(free.length){const i=free[0];add('做一次局部替换对照',`当前第 ${i+1} 位 ${seq[i]} 没有形成非链上相邻的疏水接触。可试着换成 S（丝氨酸）再预测，比较形状与能量；如果更差，用「撤销」恢复。`,79);used.add(i);}
+ }
+ if(advice.length<2){add('让相同序列再探索一次',result?`当前匹配 ${result.match.score.toFixed(1)}%，能量 ${result.energy} ε。先保留这 ${seq.length} 个残基，再次预测；模拟退火可能找到另一种更低能量的折叠。`:`先保留目前 ${seq.length} 个残基并提交预测。重点比较目标 ${level().matchThreshold}% 匹配度与 ≤ ${level().energyThreshold} ε 能量，确定下一步该调整长度还是接触。`,91);}
+ if(advice.length<2){const i=seq.length?Math.min(1,seq.length-1):-1;add('试验一个明确的改动',i>=0?`把第 ${i+1} 位 ${seq[i]} 换成 ${seq[i]==='L'?'S':'L'}，重新预测并记录三项指标。只改一个位置，便于比较这次修改的影响；无改善时可以撤销。`:'先依次加入 L、V、L、V，再用 L 补齐目标长度，然后提交第一次预测。',82);}
+ return advice.slice(0,2);
+}
+function showAdvice(){if(busy||record().hints>=3)return;const suggestions=makeAdvice();record().hints++;persist();$('adviceContent').replaceChildren();for(let i=0;i<suggestions.length;i++){const advice=suggestions[i],card=document.createElement('article');card.className='advice-card';const h=document.createElement('h3'),c=document.createElement('span'),p=document.createElement('p');c.className='confidence';c.textContent=`模拟置信度 ${advice.confidence}%`;h.append(document.createTextNode(`${i+1}. ${advice.title}`),c);p.textContent=advice.text;card.append(h,p);$('adviceContent').append(card);}$('adviceRemaining').textContent=`第 ${currentLevel} 关还剩 ${3-record().hints} 次建议机会。`;renderEditor();openDialog('adviceDialog');}
+function openDialog(id){previousFocus=document.activeElement;$(id).showModal();}
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
+document.querySelectorAll('dialog').forEach(dialog=>{dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});dialog.addEventListener('close',()=>previousFocus?.focus());});
+$('helpButton').onclick=()=>openDialog('helpDialog');$('suggestButton').onclick=showAdvice;$('predictButton').onclick=startPrediction;$('deleteButton').onclick=removeResidue;$('clearButton').onclick=()=>{selected=-1;editSequence('');};$('starterButton').onclick=()=>{selected=-1;editSequence(level().starter);toast('已载入本关起始序列，可继续修改');};
+$('undoButton').onclick=()=>{if(!history.length||busy)return;record().seq=history.pop();selected=-1;result=null;trace=[];persist();renderEditor();resetPrediction();};
+$('importButton').onclick=()=>{const next=$('sequenceInput').value.toUpperCase().replace(/\s/g,'');if(!next){$('inputError').textContent='请输入要载入的氨基酸单字母序列。';return;}const bad=[...new Set([...next].filter(a=>!AMINO[a]))];if(bad.length){$('inputError').textContent='无法识别这些字符：'+bad.join('、')+'。请使用下方 20 种氨基酸的单字母代码。';return;}if(next.length>30){$('inputError').textContent=`共有 ${next.length} 个残基，上限是 30 个。请缩短后再载入。`;return;}selected=-1;editSequence(next);$('inputError').textContent='';toast(`已载入 ${next.length} 个残基`);};
+$('sequenceInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('importButton').click();}});
+$('overlayButton').onclick=()=>{showOverlay=!showOverlay;$('overlayButton').setAttribute('aria-pressed',String(showOverlay));renderPrediction();};$('gridButton').onclick=()=>{showGrid=!showGrid;$('gridButton').setAttribute('aria-pressed',String(showGrid));renderTarget();renderPrediction();};
+$('nextButton').onclick=()=>{if(currentLevel===8){openDialog('completeDialog');return;}loadLevel(currentLevel+1);$('levelTitle').scrollIntoView({behavior:reduceMotion?'instant':'smooth',block:'center'});};
+$('resetButton').onclick=()=>{if(!busy)openDialog('resetDialog');};$('confirmResetButton').onclick=()=>{if(busy)return;save=blankSave();$('resetDialog').close();loadLevel(1);toast('已重置本游戏进度');};
+document.addEventListener('keydown',e=>{if(busy||document.querySelector('dialog[open]')||e.target.matches('input,textarea,[contenteditable=true]'))return;if(e.key==='Backspace'||e.key==='Delete'){e.preventDefault();removeResidue();}if(e.key==='Escape'){selected=-1;renderEditor();}});
+let resizeFrame=0;new ResizeObserver(()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>{renderTarget();renderPrediction();drawEnergyChart();});}).observe(document.querySelector('.workspace'));
+function drawBrand(){const ctx=$('brandCanvas').getContext('2d');ctx.scale(2,2);ctx.lineWidth=1.4;ctx.strokeStyle='#c2e89399';const nodes=[[10,11],[27,6],[31,26],[13,33],[19,20]];for(const [a,b] of [[0,1],[1,2],[2,3],[3,4],[4,0],[4,2]]){ctx.beginPath();ctx.moveTo(...nodes[a]);ctx.lineTo(...nodes[b]);ctx.stroke();}for(const [i,p] of nodes.entries()){ctx.fillStyle=i===4?'#c2e893':'#252a38';ctx.strokeStyle='#c2e893';ctx.beginPath();ctx.arc(...p,i===4?4:3.3,0,Math.PI*2);ctx.fill();ctx.stroke();}}
+createPalette();drawBrand();loadLevel(currentLevel);showStorageStatus();
+// Read-only diagnostics are useful for local verification and reproducible experiments.
+window.ProteinDesigner=Object.freeze({model:ProteinModel,getSnapshot:()=>JSON.parse(JSON.stringify({level:currentLevel,sequence:sequence(),busy,selected,result,done:save.done,hintsUsed:record().hints,storageOK,trace,unlocked:unlocked()}))});
+
+</script>
+</body>
+</html>
